@@ -1,0 +1,5 @@
+package com.chubb.FlightBookingSystem.exception;
+
+public class FlightNotFoundException {
+
+}

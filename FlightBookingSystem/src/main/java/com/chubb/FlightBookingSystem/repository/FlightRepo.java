@@ -14,4 +14,6 @@ public interface FlightRepo extends JpaRepository<FlightInfo, Long> {
             LocalDateTime start,
             LocalDateTime end
     );
+
+    boolean existsByFlightCode(String flightCode); // <--- add this
 }
