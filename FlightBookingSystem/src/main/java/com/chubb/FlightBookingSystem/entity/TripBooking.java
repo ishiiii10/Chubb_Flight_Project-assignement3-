@@ -1,7 +1,9 @@
 package com.chubb.FlightBookingSystem.entity;
 
 import jakarta.persistence.*;
+
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "trip_booking")
@@ -18,6 +20,7 @@ public class TripBooking extends AuditTrail {
 
     // Unique booking reference — can be shared with user
     @Column(nullable = false, unique = true)
+    @JsonProperty("pnr")
     private String bookingRef;
 
     @ManyToOne(optional = false)

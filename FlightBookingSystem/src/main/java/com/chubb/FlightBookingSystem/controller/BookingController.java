@@ -32,18 +32,18 @@ public class BookingController {
     }
 
     // Get booking by booking reference
-    @GetMapping("/{bookingRef}")
-    public ResponseEntity<TripBooking> getBooking(@PathVariable String bookingRef) {
-        Optional<TripBooking> bookingOpt = bookingRepo.findByBookingRef(bookingRef);
+    @GetMapping("/{pnr}")
+    public ResponseEntity<TripBooking> getBooking(@PathVariable String pnr) {
+        Optional<TripBooking> bookingOpt = bookingRepo.findByBookingRef(pnr);
         return bookingOpt
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
     // Cancel a booking by reference
-    @PostMapping("/{bookingRef}/cancel")
-    public ResponseEntity<TripBooking> cancelBooking(@PathVariable String bookingRef) {
-        TripBooking cancelled = bookingService.cancelBooking(bookingRef);
+    @PostMapping("/{pnr}/cancel")
+    public ResponseEntity<TripBooking> cancelBooking(@PathVariable String pnr) {
+        TripBooking cancelled = bookingService.cancelBooking(pnr);
         return ResponseEntity.ok(cancelled);
     }
     

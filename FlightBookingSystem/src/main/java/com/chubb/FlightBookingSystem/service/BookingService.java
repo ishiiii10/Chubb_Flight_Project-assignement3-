@@ -1,6 +1,7 @@
 package com.chubb.FlightBookingSystem.service;
 
 import com.chubb.FlightBookingSystem.dto.BookingRequest;
+
 import com.chubb.FlightBookingSystem.entity.FlightInfo;
 import com.chubb.FlightBookingSystem.entity.TripBooking;
 import com.chubb.FlightBookingSystem.entity.TravelerProfile;
@@ -15,6 +16,7 @@ import com.chubb.FlightBookingSystem.repository.TravelerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.chubb.FlightBookingSystem.util.PnrGenerator;
 import java.util.UUID;
 
 @Service
@@ -63,8 +65,13 @@ public class BookingService {
         // 4) Calculate price (very simple: seats * baseFare)
         double totalPrice = requestedSeats * flight.getBaseFare();
 
-        // 5) Generate a booking reference (simple but unique enough)
+     // 5) Generate a booking reference (simple but unique enough)
         String bookingRef = "BK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        
+        String pnr;
+        do {
+            pnr = PnrGenerator.generatePnr();
+        } while (bookingRepo.existsByBookingRef(pnr));
 
         // 6) Reduce available seats on the flight
         flight.setAvailableSeats(flight.getAvailableSeats() - requestedSeats);
@@ -72,7 +79,7 @@ public class BookingService {
 
         // 7) Create and save booking
         TripBooking booking = TripBooking.builder()
-                .bookingRef(bookingRef)
+                .bookingRef(pnr)   // this is now the PNR
                 .traveler(traveler)
                 .flight(flight)
                 .seatsBooked(requestedSeats)
@@ -83,13 +90,13 @@ public class BookingService {
         return bookingRepo.save(booking);
     }
     
-    public TripBooking cancelBooking(String bookingRef) {
+    public TripBooking cancelBooking(String pnr) {
 
-        TripBooking booking = bookingRepo.findByBookingRef(bookingRef)
-                .orElseThrow(() -> new BookingNotFoundException(bookingRef));
+        TripBooking booking = bookingRepo.findByBookingRef(pnr)
+                .orElseThrow(() -> new BookingNotFoundException(pnr));
 
         if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
-            throw new BookingAlreadyCancelledException(bookingRef);
+            throw new BookingAlreadyCancelledException(pnr);
         }
 
         // restore seats to the flight
