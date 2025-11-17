@@ -1,0 +1,64 @@
+package com.chubb.FlightBookingSystem.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
+import java.time.LocalDateTime;
+
+/**
+ * Common audit fields used across entities in my flight project.
+ * I am keeping it very minimal on purpose.
+ */
+@MappedSuperclass
+public abstract class AuditTrail {
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "created_by")
+    private String createdBy = "system";   // for now, I will set a default
+
+    @Column(name = "updated_by")
+    private String updatedBy = "system";
+
+    @PrePersist
+    public void onInsert() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Getters and setters (I am not using Lombok here on purpose)
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+}
