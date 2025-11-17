@@ -1,0 +1,23 @@
+package com.chubb.FlightBookingSystem.service;
+
+import com.chubb.FlightBookingSystem.entity.FlightInfo;
+import com.chubb.FlightBookingSystem.repository.FlightRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class FlightService {
+
+    @Autowired
+    private FlightRepo flightRepo;
+
+    public FlightInfo addFlight(FlightInfo flight) {
+        return flightRepo.save(flight);
+    }
+
+    public List<FlightInfo> getAllFlights() {
+        return flightRepo.findAll();
+    }
+}
