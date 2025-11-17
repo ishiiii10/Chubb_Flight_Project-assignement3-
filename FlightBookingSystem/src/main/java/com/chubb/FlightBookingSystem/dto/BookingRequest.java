@@ -3,6 +3,9 @@
 package com.chubb.FlightBookingSystem.dto;
 
 import jakarta.validation.constraints.*;
+import java.util.List;
+//...
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,4 +43,8 @@ public class BookingRequest {
     @Min(value = 1, message = "At least 1 seat must be booked")
     @Max(value = 9, message = "Cannot book more than 9 seats in one booking")
     private Integer seatsToBook;
+    
+    @NotNull(message = "Passenger list is required")
+    @Size(min = 1, message = "At least one passenger is required")
+    private List<PassengerRequest> passengers;
 }

@@ -1,0 +1,5 @@
+package com.chubb.FlightBookingSystem.repository;
+
+public class PassengerDetailsRepo {
+
+}

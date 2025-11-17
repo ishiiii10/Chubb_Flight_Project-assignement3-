@@ -2,8 +2,13 @@ package com.chubb.FlightBookingSystem.entity;
 
 import jakarta.persistence.*;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.List;
 
 @Entity
 @Table(name = "trip_booking")
@@ -39,4 +44,8 @@ public class TripBooking extends AuditTrail {
 
     @Column(nullable = false)
     private String status;  // CONFIRMED, CANCELLED
+    
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<PassengerDetails> passengers;
 }

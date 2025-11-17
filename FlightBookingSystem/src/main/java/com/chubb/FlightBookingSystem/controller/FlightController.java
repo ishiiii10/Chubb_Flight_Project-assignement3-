@@ -36,19 +36,29 @@ public class FlightController {
     }
     
     @GetMapping("/search")
-    public ResponseEntity<java.util.List<FlightInfo>> searchFlights(
+    public ResponseEntity<Object> searchFlights(
             @RequestParam("from") String from,
             @RequestParam("to") String to,
             @RequestParam("date") String dateString,
-            @RequestParam("passengers") int passengers) {
+            @RequestParam("passengers") int passengers,
+            @RequestParam(value = "tripType", required = false) String tripType,
+            @RequestParam(value = "returnDate", required = false) String returnDateString
+    ) {
 
         FlightSearchRequest search = new FlightSearchRequest();
         search.setFromAirport(from);
         search.setToAirport(to);
         search.setPassengers(passengers);
-        search.setTravelDate(LocalDate.parse(dateString)); // expects YYYY-MM-DD
+        search.setTravelDate(LocalDate.parse(dateString));
 
-        java.util.List<FlightInfo> results = flightService.searchFlights(search);
-        return ResponseEntity.ok(results);
+        if (tripType != null) {
+            search.setTripType(tripType);
+        }
+        if (returnDateString != null) {
+            search.setReturnDate(LocalDate.parse(returnDateString));
+        }
+
+        Object result = flightService.searchFlights(search);
+        return ResponseEntity.ok(result);
     }
 }

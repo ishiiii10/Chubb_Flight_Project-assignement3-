@@ -13,4 +13,7 @@ public class FlightSearchRequest {
     private String toAirport;
     private LocalDate travelDate;
     private int passengers;
+    
+    private String tripType;        // "ONE_WAY" or "ROUND_TRIP"
+    private LocalDate returnDate;   // optional for round trip
 }

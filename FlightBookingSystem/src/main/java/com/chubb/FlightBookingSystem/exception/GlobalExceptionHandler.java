@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 
+import com.chubb.FlightBookingSystem.exception.CancellationNotAllowedException;
 
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -87,6 +88,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleTravelerNotFound(
             TravelerNotFoundException ex, HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, "TRAVELER_NOT_FOUND", ex.getMessage(), request);
+    }
+    
+    @ExceptionHandler(CancellationNotAllowedException.class)
+    public ResponseEntity<ApiError> handleCancellationNotAllowed(
+            CancellationNotAllowedException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "CANCELLATION_NOT_ALLOWED", ex.getMessage(), request);
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)

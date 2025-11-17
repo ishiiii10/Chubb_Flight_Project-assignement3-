@@ -16,6 +16,13 @@ import com.chubb.FlightBookingSystem.repository.TravelerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.chubb.FlightBookingSystem.exception.CancellationNotAllowedException;
+import java.time.LocalDateTime;
+
+import com.chubb.FlightBookingSystem.dto.PassengerRequest;
+import com.chubb.FlightBookingSystem.entity.PassengerDetails;
+import com.chubb.FlightBookingSystem.repository.PassengerDetailsRepo;
+
 import com.chubb.FlightBookingSystem.util.PnrGenerator;
 import java.util.UUID;
 
@@ -30,6 +37,9 @@ public class BookingService {
 
     @Autowired
     private FlightRepo flightRepo;
+    
+    @Autowired
+    private PassengerDetailsRepo passengerDetailsRepo;
 
     public TripBooking createBooking(BookingRequest request) {
 
@@ -44,6 +54,17 @@ public class BookingService {
         }
         if (requestedSeats > flight.getAvailableSeats()) {
             throw new NotEnoughSeatsException(requestedSeats, flight.getAvailableSeats());
+        }
+
+        // NEW: passengers list size must match seats
+        if (request.getPassengers() == null || request.getPassengers().isEmpty()) {
+            throw new IllegalArgumentException("Passenger details are required");
+        }
+        if (request.getPassengers().size() != requestedSeats) {
+            throw new IllegalArgumentException(
+                    "Seats to book (" + requestedSeats + ") must match number of passengers (" +
+                            request.getPassengers().size() + ")"
+            );
         }
 
         // 3) Find or create traveler by email
@@ -79,7 +100,7 @@ public class BookingService {
 
         // 7) Create and save booking
         TripBooking booking = TripBooking.builder()
-                .bookingRef(pnr)   // this is now the PNR
+                .bookingRef(pnr)
                 .traveler(traveler)
                 .flight(flight)
                 .seatsBooked(requestedSeats)
@@ -87,7 +108,24 @@ public class BookingService {
                 .status("CONFIRMED")
                 .build();
 
-        return bookingRepo.save(booking);
+        // First save booking to get ID
+        booking = bookingRepo.save(booking);
+
+        // Save passenger details
+        for (PassengerRequest pReq : request.getPassengers()) {
+            PassengerDetails passenger = PassengerDetails.builder()
+                    .name(pReq.getName())
+                    .gender(pReq.getGender())
+                    .age(pReq.getAge())
+                    .mealType(pReq.getMealType())
+                    .seatNumber(pReq.getSeatNumber())
+                    .booking(booking)
+                    .build();
+
+            passengerDetailsRepo.save(passenger);
+        }
+
+        return booking;
     }
     
     public TripBooking cancelBooking(String pnr) {
@@ -97,6 +135,15 @@ public class BookingService {
 
         if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
             throw new BookingAlreadyCancelledException(pnr);
+        }
+
+        // 24-hour cancellation rule
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime departure = booking.getFlight().getDepartureTime();
+
+        // if departure is <= now + 24h, cancellation is NOT allowed
+        if (!departure.isAfter(now.plusHours(24))) {
+            throw new CancellationNotAllowedException(pnr);
         }
 
         // restore seats to the flight
