@@ -1,11 +1,14 @@
 package com.chubb.FlightBookingSystem.controller;
 
 import com.chubb.FlightBookingSystem.entity.AirlineDetails;
+
 import com.chubb.FlightBookingSystem.service.AirlineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,7 +21,7 @@ public class AirlineController {
 
     // Add a new airline
     @PostMapping
-    public ResponseEntity<AirlineDetails> addAirline(@RequestBody AirlineDetails airlineDetails) {
+    public ResponseEntity<AirlineDetails> addAirline(@Valid @RequestBody AirlineDetails airlineDetails) {
         AirlineDetails savedAirline = airlineService.addAirline(airlineDetails);
         return new ResponseEntity<>(savedAirline, HttpStatus.CREATED);
     }
@@ -29,4 +32,6 @@ public class AirlineController {
         List<AirlineDetails> airlines = airlineService.getAllAirlines();
         return ResponseEntity.ok(airlines);
     }
+    
+    
 }

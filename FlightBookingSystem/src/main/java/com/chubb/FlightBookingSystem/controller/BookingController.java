@@ -1,6 +1,7 @@
 package com.chubb.FlightBookingSystem.controller;
 
 import com.chubb.FlightBookingSystem.dto.BookingRequest;
+
 import com.chubb.FlightBookingSystem.entity.TripBooking;
 import com.chubb.FlightBookingSystem.repository.BookingRepo;
 import com.chubb.FlightBookingSystem.service.BookingService;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 import java.util.Optional;
 
@@ -23,7 +26,7 @@ public class BookingController {
 
     // Create a new booking
     @PostMapping
-    public ResponseEntity<TripBooking> createBooking(@RequestBody BookingRequest request) {
+    public ResponseEntity<TripBooking> createBooking(@Valid @RequestBody BookingRequest request) {
         TripBooking booking = bookingService.createBooking(request);
         return new ResponseEntity<>(booking, HttpStatus.CREATED);
     }
@@ -35,5 +38,21 @@ public class BookingController {
         return bookingOpt
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    
+    // Cancel a booking by reference
+    @PostMapping("/{bookingRef}/cancel")
+    public ResponseEntity<TripBooking> cancelBooking(@PathVariable String bookingRef) {
+        TripBooking cancelled = bookingService.cancelBooking(bookingRef);
+        return ResponseEntity.ok(cancelled);
+    }
+    
+    // Get all bookings for a traveler (by email)
+    @GetMapping("/traveler")
+    public ResponseEntity<java.util.List<TripBooking>> getBookingsForTraveler(
+            @RequestParam("email") String email) {
+
+        java.util.List<TripBooking> bookings = bookingService.getBookingsForTraveler(email);
+        return ResponseEntity.ok(bookings);
     }
 }

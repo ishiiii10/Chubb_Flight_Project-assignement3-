@@ -6,6 +6,9 @@ import com.chubb.FlightBookingSystem.entity.TripBooking;
 import com.chubb.FlightBookingSystem.entity.TravelerProfile;
 import com.chubb.FlightBookingSystem.exception.FlightNotFoundException;
 import com.chubb.FlightBookingSystem.exception.NotEnoughSeatsException;
+import com.chubb.FlightBookingSystem.exception.BookingAlreadyCancelledException;
+import com.chubb.FlightBookingSystem.exception.BookingNotFoundException;
+import com.chubb.FlightBookingSystem.exception.TravelerNotFoundException;
 import com.chubb.FlightBookingSystem.repository.BookingRepo;
 import com.chubb.FlightBookingSystem.repository.FlightRepo;
 import com.chubb.FlightBookingSystem.repository.TravelerRepo;
@@ -78,5 +81,36 @@ public class BookingService {
                 .build();
 
         return bookingRepo.save(booking);
+    }
+    
+    public TripBooking cancelBooking(String bookingRef) {
+
+        TripBooking booking = bookingRepo.findByBookingRef(bookingRef)
+                .orElseThrow(() -> new BookingNotFoundException(bookingRef));
+
+        if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            throw new BookingAlreadyCancelledException(bookingRef);
+        }
+
+        // restore seats to the flight
+        FlightInfo flight = booking.getFlight();
+        int seatsToRestore = booking.getSeatsBooked();
+        flight.setAvailableSeats(flight.getAvailableSeats() + seatsToRestore);
+        flightRepo.save(flight);
+
+        // update booking status
+        booking.setStatus("CANCELLED");
+
+        return bookingRepo.save(booking);
+    }
+    
+    public java.util.List<TripBooking> getBookingsForTraveler(String email) {
+
+        // 1) Find traveler by email
+        TravelerProfile traveler = travelerRepo.findByEmail(email)
+                .orElseThrow(() -> new TravelerNotFoundException(email));
+
+        // 2) Find bookings for that traveler
+        return bookingRepo.findByTraveler(traveler);
     }
 }
